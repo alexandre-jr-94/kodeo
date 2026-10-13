@@ -1,0 +1,26 @@
+import { gamification } from './learning';
+import { lessonXP } from './lesson-session';
+import type { LessonState } from './lesson-session';
+import { completedCount, getLevel, levelThresholds, trails } from './trails';
+import type { LearnerProgress, Trail } from './trails';
+
+export function levelProgress(xp: number) {
+  const level = getLevel(xp);
+  const start = levelThresholds[level - 1];
+  const next = levelThresholds[level] ?? null;
+  return { level, next, remaining: next === null ? 0 : Math.max(0, next - xp), percent: next === null ? 100 : Math.min(100, Math.max(0, (xp - start) / (next - start) * 100)) };
+}
+
+export function learnerProgress(state: LessonState): LearnerProgress {
+  const javascript = trails.find(trail => trail.id === 'javascript')!;
+  return { xp: gamification.initialXP + lessonXP(state), completed: { javascript: javascript.initialCompleted + Number(state.completed) } };
+}
+
+export function trailProgress(trail: Trail, progress: LearnerProgress) {
+  const completed = completedCount(trail, progress);
+  return { completed, total: trail.steps.length, percent: Math.round(completed / trail.steps.length * 100) };
+}
+
+export function totalCompleted(progress: LearnerProgress) {
+  return trails.reduce((total, trail) => total + completedCount(trail, progress), 0);
+}

@@ -173,3 +173,13 @@ h1 { font-size: clamp(24px, 2.2vw, 32px); letter-spacing: -1px; font-weight: 650
 @media(prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 
 @media(max-width: 760px) { .sidebar:not(.is-open) { visibility: hidden; } .sidebar.is-open { visibility: visible; } }
+
+/* Navigation and preview states */
+button.brand { border: 0; background: transparent; padding: 0; text-align: left; cursor: pointer; }
+.skip-link { position: fixed; top: 8px; left: 8px; z-index: 1500; padding: 12px 18px; background: #fff; color: #143352; transform: translateY(-160%); border-radius: 8px; }
+.skip-link:focus { transform: none; }
+.demo-notice { margin: 0 0 22px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.mobile-drawer .MuiDrawer-paper { width: 240px; }
+.mobile-drawer .sidebar { position: static; width: 240px; height: 100%; transform: none; visibility: visible; }
+.mobile-drawer .brand { flex-shrink: 0; }
+#main-content:focus, .page-heading h1:focus { outline: none; }

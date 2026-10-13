@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { Alert, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, LinearProgress, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { ArrowLeft, ArrowRight, BookOpen, Check, CheckCircle2, Clock3, Code2, Compass, Flag, GraduationCap, LayoutList, LockKeyhole, Map, Play, ShieldCheck, Target, Terminal, Trophy, X, Zap } from 'lucide-react';
@@ -25,12 +25,13 @@ function pathFor(count: number, mobile = false) {
   }).join(' ');
 }
 
-export function TrailExplorer({ xp, lessonDone, selectedTrail, onSelectTrail, onOpenLesson }: { xp: number; lessonDone: boolean; selectedTrail: TrailId; onSelectTrail: (id: TrailId) => void; onOpenLesson: () => void }) {
+export function TrailExplorer({ progress, selectedTrail, onSelectTrail, onOpenLesson }: { progress: LearnerProgress; selectedTrail: TrailId; onSelectTrail: (id: TrailId) => void; onOpenLesson: () => void }) {
   const [filter, setFilter] = useState<Filter>('all');
   const [view, setView] = useState<'map' | 'list'>('map');
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
-  const progress: LearnerProgress = useMemo(() => ({ xp, completed: { javascript: lessonDone ? 6 : 5 } }), [xp, lessonDone]);
+  const xp = progress.xp;
+  useEffect(() => { setSelectedStep(null); }, [selectedTrail]);
   const filtered = trails.filter(trail => filter === 'all' || trailStatus(trail, progress) === filter);
   const active = filtered.find(trail => trail.id === selectedTrail) ?? filtered[0];
   const counts = Object.fromEntries(filters.map(item => [item.id, item.id === 'all' ? trails.length : trails.filter(trail => trailStatus(trail, progress) === item.id).length]));
@@ -73,7 +74,7 @@ export function TrailExplorer({ xp, lessonDone, selectedTrail, onSelectTrail, on
         <ol aria-label={`Percurso de ${active.title}`}>{active.steps.map((_, index) => renderStep(active, index))}</ol>
       </div><div className="map-finish"><Flag size={19}/><span>Seu destino: <strong>{active.title}</strong></span><span>{complete === active.steps.length ? 'Conquistado' : 'Continue no seu ritmo'}</span></div>
       {nextIndex >= 0 && <button className="back-to-current" onClick={focusNext}><Target size={16}/>Localizar minha etapa atual</button>}
-    </section> : <section className="trail-empty"><Compass size={35}/><h2>Nenhuma trilha neste status</h2><p>Explore os outros caminhos disponíveis.</p><Button variant="outlined" onClick={() => setFilter('all')}>Mostrar todas as trilhas</Button></section>}
+    </section> : <section className="trail-empty"><Compass size={35}/><h2>Nenhuma trilha neste status</h2><p>Explore os outros caminhos disponíveis.</p><Button variant="outlined" onClick={() => changeFilter('all')}>Mostrar todas as trilhas</Button></section>}
     </div>
     <p className="trails-demo-note">Prévia com progresso simulado. Os bloqueios respondem ao XP e às conclusões desta sessão; ao atualizar a página, o progresso reinicia.</p>
     <Dialog open={!!currentStep} onClose={() => setSelectedStep(null)} fullWidth maxWidth="sm" aria-labelledby="step-dialog-title"><DialogTitle component="div"><div className="dialog-heading"><h2 id="step-dialog-title">{currentStep?.title}</h2><IconButton aria-label="Fechar detalhes da etapa" onClick={() => setSelectedStep(null)}><X size={20}/></IconButton></div></DialogTitle><DialogContent>{currentStep && currentStatus && active && <><Chip size="small" label={statusLabels[currentStatus]} variant="outlined" icon={currentStatus === 'locked' ? <LockKeyhole size={14}/> : currentStatus === 'completed' ? <CheckCircle2 size={14}/> : <Play size={14}/>}/><p className="step-detail-description">{currentStep.description}</p><div className="step-detail-meta"><span><BookOpen size={16}/>{currentStep.module}</span><span><Clock3 size={16}/>{currentStep.minutes} min</span><span><Zap size={16}/>{currentStep.xp} XP pela conclusão</span></div>{currentStatus === 'locked' ? <Alert severity="info" icon={<LockKeyhole size={20}/>}><strong>Como desbloquear esta etapa</strong><ul className="step-requirements">{reasons.map(reason => <li key={reason}>{reason}</li>)}</ul>Todos os requisitos precisam ser cumpridos. O XP é acumulado, não gasto.</Alert> : currentStep.playable ? <Alert severity="success">{currentStatus === 'completed' ? 'Você já concluiu esta lição. Pode revisá-la sem receber XP novamente.' : 'Esta lição está pronta para você. As respostas têm explicações e seu progresso será atualizado ao concluir.'}</Alert> : <Alert severity="info">{currentStatus === 'completed' ? 'Esta conclusão faz parte do perfil demonstrativo.' : 'A etapa está liberada pelas regras do percurso.'} O conteúdo interativo desta lição será adicionado nas próximas etapas. Consulte o resumo abaixo.</Alert>}{(!currentStep.playable && currentStatus !== 'locked') && <div className="step-content-preview"><h3>O que você vai aprender</h3><p>{currentStep.description} Esta etapa faz parte do módulo “{currentStep.module}” da trilha {active.title}.</p><p>Ao concluir a atividade completa, o progresso será registrado e a próxima etapa ficará disponível quando seus requisitos forem atendidos.</p></div>}</>}</DialogContent><DialogActions sx={{ p: 3, flexWrap: 'wrap', gap: 1 }}><Button onClick={() => setSelectedStep(null)} startIcon={<ArrowLeft size={15}/>}>Voltar ao mapa</Button>{currentStatus === 'locked' && nextIndex >= 0 && <Button variant="contained" onClick={() => { setSelectedStep(nextIndex); }}>Ver etapa disponível</Button>}{currentStep?.playable && currentStatus !== 'locked' && <Button variant="contained" onClick={() => { setSelectedStep(null); onOpenLesson(); }} endIcon={<Play size={16}/>}>{currentStatus === 'completed' ? 'Revisar lição' : 'Continuar lição'}</Button>}</DialogActions></Dialog>

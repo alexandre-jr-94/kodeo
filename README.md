@@ -37,7 +37,7 @@ A proposta é simples: **a gamificação apoia o aprendizado, e o conteúdo cont
 | **Aparência** | Temas claro e escuro, azul sóbrio e layout responsivo. |
 | **Acessibilidade** | Estados com texto e ícones, foco visível e respeito à redução de movimento. |
 
-> **Estágio atual:** protótipo com dados simulados e sem login. O progresso e o XP reiniciam ao recarregar a página; a preferência de tema fica salva no navegador. As demais lições apresentam resumos, com suas atividades completas previstas para as próximas etapas. XP é acumulado, não gasto para acessar trilhas.
+> **Estágio atual:** Fase 1 com fluxo completo em dados simulados e sem login. Veja os [critérios e a validação da Fase 1](docs/FASE_1.md). O progresso e o XP reiniciam ao recarregar a página; a preferência de tema fica salva no navegador. As demais lições apresentam resumos, com suas atividades completas previstas para as próximas etapas. XP é acumulado, não gasto para acessar trilhas.
 
 ### Ambiente de lições
 
@@ -80,6 +80,15 @@ pnpm build      # Gerar a versão de produção
 pnpm start      # Executar a versão compilada
 ```
 
+### Regressão de navegação no navegador
+
+```bash
+pnpm exec playwright install chromium  # Preparar o navegador uma vez
+pnpm test:e2e                          # Compilar, iniciar e testar a aplicação
+```
+
+A suíte cobre o botão **Explorar** da tarefa de cibersegurança, a lição completa, retomada, erros, teclado, editor, conclusão e revisão sem XP duplicado. Executa cenários em desktop e mobile, incluindo uma verificação em 320 px. O servidor de teste usa a porta 3100. Para usar um Chromium já instalado, defina `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` com o caminho do executável.
+
 ## Organização
 
 ```text
@@ -92,7 +101,7 @@ src/
 tests/                   # Testes das regras de acesso e progressão
 ```
 
-As regras de nível, requisitos e acesso às etapas ficam em `src/lib/trails.ts`. Cursos, questões e recompensas demonstrativas ficam em `src/lib/learning.ts`.
+As regras de nível, requisitos e acesso às etapas ficam em `src/lib/trails.ts`. Cursos e recompensas demonstrativas ficam em `src/lib/learning.ts`; questões em `src/lib/lesson.ts`. Os valores exibidos de XP e progresso são derivados em `src/lib/progress.ts`.
 
 ## Roadmap
 
@@ -101,6 +110,9 @@ As regras de nível, requisitos e acesso às etapas ficam em `src/lib/trails.ts`
 - [x] Mapa interativo e biblioteca de trilhas.
 - [x] Requisitos de acesso por nível, XP e pré-requisitos.
 - [x] Lição com formulários, feedback, exercícios de código e atualização de progresso.
+- [x] Progresso compartilhado entre dashboard e mapa, níveis dinâmicos e navegação sem reiniciar a sessão.
+- [x] Menu mobile com controle de foco e Escape; aviso explícito dos dados simulados.
+- [x] Testes do fluxo da Fase 1 em desktop e mobile.
 - [ ] Expandir os conteúdos e as atividades das lições.
 - [ ] Integrar Supabase Auth, PostgreSQL e Row Level Security.
 - [ ] Persistir tentativas, progresso, conquistas e histórico de XP.
