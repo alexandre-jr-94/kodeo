@@ -33,11 +33,19 @@ A proposta é simples: **a gamificação apoia o aprendizado, e o conteúdo cont
 | **Mapa de aprendizado** | Percursos pontilhados em formato de tabuleiro, com etapas selecionáveis. |
 | **Biblioteca de trilhas** | Blocos compactos, filtros por status e visualização alternativa em lista. |
 | **Desbloqueios** | Requisitos explícitos de nível, XP, etapa anterior e conclusão de outras trilhas. |
-| **Prática** | Lição demonstrativa de JavaScript com questões e explicações imediatas. |
+| **Prática** | Lição de JavaScript com alternativas, resposta escrita, editor de código e feedback por critério. |
 | **Aparência** | Temas claro e escuro, azul sóbrio e layout responsivo. |
 | **Acessibilidade** | Estados com texto e ícones, foco visível e respeito à redução de movimento. |
 
 > **Estágio atual:** protótipo com dados simulados e sem login. O progresso e o XP reiniciam ao recarregar a página; a preferência de tema fica salva no navegador. As demais lições apresentam resumos, com suas atividades completas previstas para as próximas etapas. XP é acumulado, não gasto para acessar trilhas.
+
+### Ambiente de lições
+
+A rota `/licoes/variaveis` oferece uma introdução e cinco exercícios em uma área de estudo ampla. O aluno pode consultar dicas, corrigir respostas, voltar ao exercício anterior e sair para retomar o rascunho nesta sessão. O resumo final apresenta tentativas, recompensas e conquistas; revisões não concedem XP novamente.
+
+Os exercícios de código usam **Acorn** para analisar sintaxe e critérios específicos, aceitando as variações descritas no enunciado. Nenhum código enviado pelo aluno é executado. Esta etapa não é um avaliador genérico de programas. Respostas curtas seguem os valores aceitos pelo exercício.
+
+Tentativas e eventos de XP ficam no estado demonstrativo da sessão. A validação confiável no servidor e a persistência continuam previstas na integração com Supabase.
 
 ## Tecnologias
 
@@ -45,6 +53,7 @@ A proposta é simples: **a gamificação apoia o aprendizado, e o conteúdo cont
 - **TypeScript** — tipos para dados, componentes e regras de acesso.
 - **Material UI + Emotion** — componentes e tema centralizado.
 - **Lucide** — ícones da interface.
+- **Acorn** — análise de sintaxe dos exercícios de código, sem execução.
 - **Supabase + PostgreSQL** — planejados para autenticação, persistência e políticas de acesso.
 
 ## Começar
@@ -91,7 +100,7 @@ As regras de nível, requisitos e acesso às etapas ficam em `src/lib/trails.ts`
 - [x] Temas claro e escuro.
 - [x] Mapa interativo e biblioteca de trilhas.
 - [x] Requisitos de acesso por nível, XP e pré-requisitos.
-- [x] Lição demonstrativa com feedback e atualização de progresso.
+- [x] Lição com formulários, feedback, exercícios de código e atualização de progresso.
 - [ ] Expandir os conteúdos e as atividades das lições.
 - [ ] Integrar Supabase Auth, PostgreSQL e Row Level Security.
 - [ ] Persistir tentativas, progresso, conquistas e histórico de XP.

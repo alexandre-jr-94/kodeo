@@ -1,35 +1,35 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { ThemeProvider, CssBaseline, Button, IconButton, LinearProgress, Dialog, DialogTitle, DialogContent, DialogActions, Radio, FormControlLabel, RadioGroup, Alert, Tooltip } from '@mui/material';
+import { useEffect, useMemo, useReducer, useState } from 'react';
+import { ThemeProvider, CssBaseline, Button, IconButton, LinearProgress, Dialog, DialogTitle, DialogContent, DialogActions, Tooltip } from '@mui/material';
 import { ArrowRight, ArrowUpRight, BookOpen, Check, ChevronRight, Code2, Compass, Flame, GraduationCap, LayoutDashboard, LockKeyhole, Menu, Moon, Play, ShieldCheck, Sparkles, Sun, Target, Terminal, Trophy, X, Zap, CircleHelp, CheckCircle2, Clock3 } from 'lucide-react';
 import { makeTheme } from '@/components/theme';
-import { courses, gamification, questions } from '@/lib/learning';
+import { courses, gamification } from '@/lib/learning';
+import { LessonWorkspace } from '@/components/LessonWorkspace';
+import { initialLessonState, lessonReducer, lessonXP } from '@/lib/lesson-session';
 import { TrailExplorer } from '@/components/TrailExplorer';
 import { getLevel, trails } from '@/lib/trails';
 import type { TrailId } from '@/lib/trails';
 
 type Section = 'overview' | 'courses' | 'achievements';
-export default function KodeoApp({ initialSection = 'overview' }: { initialSection?: Section }) {
+export default function KodeoApp({ initialSection = 'overview', initialLessonOpen = false }: { initialSection?: Section; initialLessonOpen?: boolean }) {
   const [mode, setMode] = useState<'light' | 'dark'>('light');
   const [section, setSection] = useState<Section>(initialSection);
   const [selectedTrail, setSelectedTrail] = useState<TrailId>('javascript');
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [lessonOpen, setLessonOpen] = useState(false);
+  const [lessonOpen, setLessonOpen] = useState(initialLessonOpen);
+  const [lessonReturnUrl, setLessonReturnUrl] = useState('/trilhas?trilha=javascript');
   const [info, setInfo] = useState<string | null>(null);
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [selected, setSelected] = useState('');
-  const [checked, setChecked] = useState(false);
-  const [finished, setFinished] = useState(false);
-  const [lessonDone, setLessonDone] = useState(false);
-  const [earned, setEarned] = useState(0);
-  const [rewardedQuestions, setRewardedQuestions] = useState<number[]>([]);
+  const [lessonState, lessonDispatch] = useReducer(lessonReducer, undefined, initialLessonState);
+  const lessonDone = lessonState.completed;
+  const earned = lessonXP(lessonState);
   const theme = useMemo(() => makeTheme(mode), [mode]);
   useEffect(() => { const saved = localStorage.getItem('kodeo-theme'); setMode(saved === 'dark' || saved === 'light' ? saved : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }, []);
   useEffect(() => {
     function restoreLocation() {
       const params = new URLSearchParams(window.location.search);
-      setSection(window.location.pathname === '/trilhas' ? 'courses' : params.get('view') === 'achievements' ? 'achievements' : 'overview');
+      setLessonOpen(window.location.pathname === '/licoes/variaveis');
+      setSection(['/trilhas', '/licoes/variaveis'].includes(window.location.pathname) ? 'courses' : params.get('view') === 'achievements' ? 'achievements' : 'overview');
       const id = params.get('trilha');
       if (trails.some(trail => trail.id === id)) setSelectedTrail(id as TrailId);
       setMobileOpen(false);
@@ -38,13 +38,16 @@ export default function KodeoApp({ initialSection = 'overview' }: { initialSecti
     window.addEventListener('popstate', restoreLocation);
     return () => window.removeEventListener('popstate', restoreLocation);
   }, []);
-  const question = questions[questionIndex];
   const xp = gamification.initialXP + earned;
   const xpPercent = ((xp - gamification.levelStart) / (gamification.nextLevel - gamification.levelStart)) * 100;
   function toggleTheme() { const next = mode === 'light' ? 'dark' : 'light'; setMode(next); localStorage.setItem('kodeo-theme', next); }
-  function openLesson() { setQuestionIndex(0); setSelected(''); setChecked(false); setFinished(false); setLessonOpen(true); }
-  function verify() { setChecked(true); if (Number(selected) === question.correct && !lessonDone && !rewardedQuestions.includes(questionIndex)) { setEarned(value => value + gamification.questionXP); setRewardedQuestions(value => [...value, questionIndex]); } }
-  function nextQuestion() { if (questionIndex < questions.length - 1) { setQuestionIndex(value => value + 1); setChecked(false); setSelected(''); } else { setFinished(true); if (!lessonDone) { setEarned(value => value + gamification.lessonXP); setLessonDone(true); } } }
+  function openLesson() {
+    setLessonReturnUrl(window.location.pathname + window.location.search);
+    if (lessonState.phase === 'summary') lessonDispatch({ type: 'review' });
+    setLessonOpen(true); setMobileOpen(false);
+    window.history.pushState(null, '', '/licoes/variaveis');
+  }
+  function closeLesson() { setLessonOpen(false); window.history.pushState(null, '', lessonReturnUrl); }
   function navigate(next: Section, trailId: TrailId = selectedTrail) {
     setSection(next); setSelectedTrail(trailId); setMobileOpen(false);
     window.history.pushState(null, '', next === 'courses' ? `/trilhas?trilha=${trailId}` : next === 'achievements' ? '/?view=achievements' : '/');
@@ -65,7 +68,7 @@ export default function KodeoApp({ initialSection = 'overview' }: { initialSecti
     <main><div className="page-heading"><div><div className="eyebrow">APRENDA. PRATIQUE. EVOLUA.</div><h1>{section === 'overview' ? 'Bom te ver por aqui, Nando' : section === 'courses' ? 'Seu mapa de aprendizado' : 'Cada passo merece uma conquista'}{section === 'overview' && <span className="greeting-dot">.</span>}</h1><p>{section === 'overview' ? 'Seu próximo passo começa aqui. Vamos aprender algo novo hoje?' : section === 'courses' ? 'Escolha seu caminho. Cada etapa abre uma nova possibilidade.' : 'Celebre o que você já aprendeu e descubra o que vem a seguir.'}</p></div><div className="streak-tag"><Flame size={18}/><strong>3 dias</strong><span>de sequência</span></div></div>
     {section === 'overview' && <>
       <div className="stats-grid"><div className="stat-card"><span className="stat-icon blue"><GraduationCap size={21}/></span><div><small>Nível atual</small><strong>{getLevel(xp)} <span>Explorador</span></strong></div></div><div className="stat-card"><span className="stat-icon amber"><Zap size={21}/></span><div><small>Experiência total</small><strong>{xp.toLocaleString('pt-BR')} <span>XP</span></strong></div></div><div className="stat-card"><span className="stat-icon green"><CheckCircle2 size={21}/></span><div><small>Lições concluídas</small><strong>{13 + (lessonDone ? 1 : 0)} <span>uma de cada vez</span></strong></div></div><div className="stat-card"><span className="stat-icon purple"><Trophy size={21}/></span><div><small>Conquistas</small><strong>{lessonDone ? 4 : 3} <span>desbloqueadas</span></strong></div></div></div>
-      <div className="dashboard-grid"><div className="primary-column"><section className="continue-card"><div className="hero-content"><span className="hero-label"><span className="pulse-dot"/> SUA JORNADA CONTINUA</span><h2>Grandes ideias começam<br/>com pequenos códigos.</h2><p>Fundamentos de JavaScript</p><div className="lesson-meta"><span>Módulo 2</span><span className="meta-dot"/><span>Variáveis e tipos de dados</span></div><Button variant="contained" onClick={openLesson} endIcon={<ArrowRight size={17}/>}>{lessonDone ? 'Revisar lição' : 'Continuar aprendendo'}</Button><span className="hero-time"><Clock3 size={13}/> Cerca de 5 minutos</span></div><div className="code-art" aria-hidden="true"><div className="code-window"><div className="window-top"><i/><i/><i/><span>seu-proximo-passo.js</span></div><div className="code-lines"><span className="comment">// todo dia, um pouco melhor</span><span><b>const</b> aprendiz = {'{'}</span><span>&nbsp; curiosidade: <em>true</em>,</span><span>&nbsp; próximoPasso: <i>'aprender'</i></span><span>{'}'};</span><span className="code-gap"/><span><b>evoluir</b>(aprendiz);<span className="cursor"/></span></div></div><span className="floating-code">{'</>'}</span></div><div className="hero-footer"><span>Seu progresso na trilha</span><LinearProgress variant="determinate" value={lessonDone ? 50 : 42} aria-label="Progresso na trilha JavaScript"/><strong>{lessonDone ? 50 : 42}%</strong></div></section>
+      <div className="dashboard-grid"><div className="primary-column"><section className="continue-card"><div className="hero-content"><span className="hero-label"><span className="pulse-dot"/> SUA JORNADA CONTINUA</span><h2>Grandes ideias começam<br/>com pequenos códigos.</h2><p>Fundamentos de JavaScript</p><div className="lesson-meta"><span>Módulo 2</span><span className="meta-dot"/><span>Variáveis e tipos de dados</span></div><Button variant="contained" onClick={openLesson} endIcon={<ArrowRight size={17}/>}>{lessonDone ? 'Revisar lição' : 'Continuar aprendendo'}</Button><span className="hero-time"><Clock3 size={13}/> Cerca de 8 minutos</span></div><div className="code-art" aria-hidden="true"><div className="code-window"><div className="window-top"><i/><i/><i/><span>seu-proximo-passo.js</span></div><div className="code-lines"><span className="comment">// todo dia, um pouco melhor</span><span><b>const</b> aprendiz = {'{'}</span><span>&nbsp; curiosidade: <em>true</em>,</span><span>&nbsp; próximoPasso: <i>'aprender'</i></span><span>{'}'};</span><span className="code-gap"/><span><b>evoluir</b>(aprendiz);<span className="cursor"/></span></div></div><span className="floating-code">{'</>'}</span></div><div className="hero-footer"><span>Seu progresso na trilha</span><LinearProgress variant="determinate" value={lessonDone ? 50 : 42} aria-label="Progresso na trilha JavaScript"/><strong>{lessonDone ? 50 : 42}%</strong></div></section>
       <section className="section-block"><div className="section-title"><h2>Seu plano de hoje</h2><span className="muted">{lessonDone ? '2' : '1'} de 3 concluídas</span></div><div className="task-list"><div className="task-row completed"><span className="task-check"><Check size={15}/></span><div><strong>Dar o primeiro passo</strong><p>Acesse sua jornada e prepare-se para aprender.</p></div><span className="task-status">Concluído</span></div><div className={`task-row ${lessonDone ? 'completed' : ''}`}><span className={`task-check ${lessonDone ? '' : 'pending'}`}>{lessonDone ? <Check size={15}/> : <Play size={13}/>}</span><div><strong>Uma nova habilidade</strong><p>Conclua a lição de variáveis e tipos de dados.</p></div><button className="task-action" onClick={openLesson}>{lessonDone ? 'Revisar' : '+50 XP'}<ArrowRight size={15}/></button></div><div className="task-row"><span className="task-check pending"><Target size={15}/></span><div><strong>Explore um novo caminho</strong><p>Conheça a trilha de introdução à cibersegurança.</p></div><button className="task-action" onClick={() => navigate('courses')}>Explorar<ArrowRight size={15}/></button></div></div></section></div>
       <aside className="secondary-column"><section className="panel level-panel"><div className="panel-heading"><h2>Seu próximo nível</h2><Sparkles size={17}/></div><div className="level-symbol"><span><GraduationCap size={31}/></span><b>5</b></div><h3>Explorador</h3><p>Cada descoberta te leva mais longe.</p><div className="xp-label"><strong>{xp.toLocaleString('pt-BR')} XP</strong><span>1.500 XP</span></div><LinearProgress variant="determinate" value={xpPercent} aria-label="Progresso para o nível 6"/><div className="next-level">Faltam <strong>{1500 - xp} XP</strong> para o nível 6</div><div className="level-bottom"><span>Nível 6</span><strong>Construtor <ArrowUpRight size={14}/></strong></div></section><section className="panel weekly-panel"><div className="panel-heading"><h2>Constância é tudo</h2><Flame size={18}/></div><p>Você estudou em <strong>3 dias</strong> nesta semana.</p><div className="week-days">{['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map((day, index) => <div key={index}><span>{day}</span><i className={index < 3 ? 'day done' : 'day'}>{index < 3 ? <Check size={14}/> : <span/>}</i></div>)}</div><div className="weekly-message"><span/> Continue cultivando esse hábito.</div></section></aside></div>
     </>}
@@ -74,7 +77,7 @@ export default function KodeoApp({ initialSection = 'overview' }: { initialSecti
     {section !== 'courses' && <section className="section-block achievement-section"><div className="section-title"><div><h2>{section === 'achievements' ? 'Suas conquistas' : 'Pequenas vitórias, grandes passos'}</h2><p>Seu esforço deixa marcas.</p></div>{section === 'overview' && <button className="text-action" onClick={() => navigate('achievements')}>Ver conquistas<ArrowRight size={16}/></button>}</div><div className="achievements-grid">{[{name:'Primeiros passos', description:'Sua primeira lição concluída', icon: BookOpen, color:'blue', unlocked:true},{name:'Na mosca',description:'10 respostas corretas',icon:Target,color:'green',unlocked:true},{name:'Persistente',description:'3 dias seguidos aprendendo',icon:Flame,color:'amber',unlocked:true},{name:'Mais um passo',description:'Conclua a lição de variáveis',icon:Trophy,color:'purple',unlocked:lessonDone}].map(item => <div className={`achievement ${!item.unlocked ? 'locked' : ''}`} key={item.name}><span className={`achievement-icon ${item.color}`}><item.icon size={23}/></span><div><h3>{item.name}</h3><p>{item.description}</p></div>{item.unlocked ? <CheckCircle2 size={16} className="achievement-check"/> : <LockKeyhole size={15}/>}</div>)}</div></section>}
     <footer className="page-footer"><span><Code2 size={15}/> Feito para quem nunca para de aprender.</span><span>Kodeo · um passo de cada vez</span></footer>
     </main></div>
-    <Dialog open={lessonOpen} onClose={() => setLessonOpen(false)} fullWidth maxWidth="sm"><DialogTitle component="div"><div className="dialog-heading"><h2>{finished ? 'Lição concluída!' : 'Variáveis e tipos de dados'}</h2><IconButton aria-label="Fechar lição" onClick={() => setLessonOpen(false)}><X size={20}/></IconButton></div></DialogTitle><DialogContent>{finished ? <div className="lesson-finished"><span className="finish-icon"><Trophy size={40}/></span><h3>Mais um passo na sua jornada.</h3><p>Você revisou declarações, números e valores booleanos. Seu progresso nesta demonstração foi atualizado.</p><Alert severity="success">Conquista desbloqueada: Mais um passo</Alert></div> : <><p className="muted">Questão {questionIndex + 1} de {questions.length} · +{gamification.questionXP} XP por acerto</p><LinearProgress variant="determinate" value={((questionIndex + 1) / questions.length) * 100} aria-label="Progresso da lição"/><h3 className="question-statement">{question.statement}</h3>{'code' in question && <pre className="question-code">{question.code}</pre>}<RadioGroup aria-label="Alternativas" value={selected} onChange={event => setSelected(event.target.value)}>{question.options.map((option, index) => <FormControlLabel key={option} value={String(index)} control={<Radio/>} label={option} disabled={checked} className="answer-option"/>)}</RadioGroup>{checked && <Alert severity={Number(selected) === question.correct ? 'success' : 'info'} className="answer-feedback"> <strong>{Number(selected) === question.correct ? 'Resposta correta!' : 'Vamos entender juntos.'}</strong><br/>{question.explanation}</Alert>}{lessonDone && <p className="muted">Modo revisão: esta lição já foi concluída; o XP não será concedido novamente.</p>}</>}</DialogContent><DialogActions sx={{ p: 3 }}><Button onClick={() => setLessonOpen(false)}>{finished ? section === 'courses' ? 'Voltar à trilha' : 'Voltar ao dashboard' : 'Continuar depois'}</Button>{!finished && <Button variant="contained" disabled={!selected && !checked} onClick={checked ? nextQuestion : verify}>{checked ? questionIndex === questions.length - 1 ? 'Concluir lição' : 'Próxima questão' : 'Verificar resposta'}</Button>}</DialogActions></Dialog>
+    <LessonWorkspace open={lessonOpen} mode={mode} state={lessonState} dispatch={lessonDispatch} onExit={closeLesson} onToggleTheme={toggleTheme}/>
     <Dialog open={!!info} onClose={() => setInfo(null)} fullWidth maxWidth="sm"><DialogTitle>Seu aprendizado no Kodeo</DialogTitle><DialogContent><p>{info}</p></DialogContent><DialogActions><Button onClick={() => setInfo(null)}>Entendi</Button></DialogActions></Dialog>
   </div></ThemeProvider>;
 }

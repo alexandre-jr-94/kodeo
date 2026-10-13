@@ -16,7 +16,7 @@ export const trails: Trail[] = [
     step('js-3', 'Pensando como dev', 'Divida problemas em passos menores.', 'Primeiros passos'),
     step('js-4', 'Comentários e clareza', 'Aprenda a tornar suas intenções legíveis.', 'Primeiros passos'),
     step('js-5', 'Valores e expressões', 'Combine valores para produzir resultados.', 'Dados e decisões'),
-    step('js-6', 'Variáveis e tipos', 'Pratique let, const, números e valores booleanos.', 'Dados e decisões', { playable: true }),
+    step('js-6', 'Variáveis e tipos', 'Pratique let, const, números e valores booleanos.', 'Dados e decisões', { playable: true, minutes: 8 }),
     step('js-7', 'Operadores', 'Compare valores e combine expressões.', 'Dados e decisões'),
     step('js-8', 'Tomando decisões', 'Escolha caminhos com if e else.', 'Dados e decisões'),
     step('js-9', 'Laços de repetição', 'Automatize passos com for e while.', 'Construindo soluções', { minLevel: 6 }),
