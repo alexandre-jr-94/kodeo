@@ -1,51 +1,111 @@
-# Kodeo
+<div align="center">
 
-Protótipo de uma plataforma de aprendizado gamificado de programação e cibersegurança.
+# ⌘ Kodeo
 
-## Executar localmente
+**Aprenda. Pratique. Evolua.**
 
-Requisitos: Node.js 20.9 ou superior e pnpm.
+Uma plataforma gamificada para aprender programação e cibersegurança,<br />
+uma descoberta de cada vez.
 
-```sh
+![Status: protótipo](https://img.shields.io/badge/status-prot%C3%B3tipo-143352?style=flat-square)
+![Next.js](https://img.shields.io/badge/Next.js-App_Router-202938?style=flat-square)
+![React](https://img.shields.io/badge/React-interface-345e8b?style=flat-square)
+![TypeScript](https://img.shields.io/badge/TypeScript-tipado-345e8b?style=flat-square)
+![Material UI](https://img.shields.io/badge/Material_UI-design_system-345e8b?style=flat-square)
+
+[O projeto](#o-projeto) · [Funcionalidades](#funcionalidades) · [Começar](#começar) · [Roadmap](#roadmap)
+
+</div>
+
+---
+
+## O projeto
+
+O Kodeo transforma o estudo em uma jornada: você percorre trilhas, pratica com questões, entende seus erros e acompanha sua evolução com XP, níveis e conquistas.
+
+A proposta é simples: **a gamificação apoia o aprendizado, e o conteúdo continua sendo o foco.** Interface clara, arquitetura enxuta e desenvolvimento incremental orientam cada etapa.
+
+## Funcionalidades
+
+| Área | O que você encontra |
+| --- | --- |
+| **Dashboard** | Tarefas do dia, progresso, experiência, níveis e conquistas. |
+| **Mapa de aprendizado** | Percursos pontilhados em formato de tabuleiro, com etapas selecionáveis. |
+| **Biblioteca de trilhas** | Blocos compactos, filtros por status e visualização alternativa em lista. |
+| **Desbloqueios** | Requisitos explícitos de nível, XP, etapa anterior e conclusão de outras trilhas. |
+| **Prática** | Lição demonstrativa de JavaScript com questões e explicações imediatas. |
+| **Aparência** | Temas claro e escuro, azul sóbrio e layout responsivo. |
+| **Acessibilidade** | Estados com texto e ícones, foco visível e respeito à redução de movimento. |
+
+> **Estágio atual:** protótipo com dados simulados e sem login. O progresso e o XP reiniciam ao recarregar a página; a preferência de tema fica salva no navegador. As demais lições apresentam resumos, com suas atividades completas previstas para as próximas etapas. XP é acumulado, não gasto para acessar trilhas.
+
+## Tecnologias
+
+- **Next.js + React** — aplicação com App Router.
+- **TypeScript** — tipos para dados, componentes e regras de acesso.
+- **Material UI + Emotion** — componentes e tema centralizado.
+- **Lucide** — ícones da interface.
+- **Supabase + PostgreSQL** — planejados para autenticação, persistência e políticas de acesso.
+
+## Começar
+
+Requisitos: **Node.js 20.9+** e **pnpm**.
+
+```bash
+git clone https://github.com/yLuffe/kodeo.git
+cd kodeo
 pnpm install
 pnpm dev
 ```
 
-Abra http://localhost:3000.
+Abra **[localhost:3000](http://localhost:3000)** para o dashboard ou **[localhost:3000/trilhas](http://localhost:3000/trilhas)** para o mapa de aprendizado.
 
-```sh
-pnpm typecheck
-pnpm test
-pnpm build
+Nenhuma conta externa ou chave de API é necessária para executar o protótipo.
+
+### Verificação e produção
+
+```bash
+pnpm typecheck  # Verificar tipos
+pnpm test       # Testar regras de progressão e desbloqueio
+pnpm build      # Gerar a versão de produção
+pnpm start      # Executar a versão compilada
 ```
-
-## Primeira etapa
-
-Dashboard sem login, com perfil demonstrativo, tarefas, trilhas, XP, níveis, sequência de estudos e conquistas. Inclui modos claro e escuro com preferência salva no navegador e uma lição interativa de JavaScript com três questões e explicações.
-
-Os dados são simulados. XP e progresso vivem apenas na sessão e reiniciam ao recarregar a página. Recompensas de questões e conclusão não são duplicadas na mesma sessão. As trilhas de cibersegurança e lógica apresentam informações demonstrativas; seus conteúdos serão implementados posteriormente.
-
-## Mapa de trilhas
-
-Acesse `/trilhas` ou selecione Minhas trilhas no menu. São seis trilhas demonstrativas, com filtros por status, seleção em blocos, caminho pontilhado em formato de tabuleiro e visualização alternativa em lista.
-
-As etapas concluídas, atuais e bloqueadas têm rótulos e ícones. Etapas bloqueadas continuam selecionáveis para explicar todos os requisitos: etapa anterior, nível, XP acumulado e/ou conclusão de outra trilha. XP não é gasto. A lição de variáveis é a atividade interativa disponível nesta etapa; sua conclusão libera Operadores no mapa. Os outros conteúdos apresentam resumos e informam que a atividade interativa será adicionada posteriormente.
-
-As regras estão centralizadas em `src/lib/trails.ts`. Os testes cobrem limites de nível/XP, requisitos combinados, prevenção de saltos no percurso e atualização após concluir a lição.
 
 ## Organização
 
-- `src/app`: layout, rotas do dashboard e das trilhas e estilos globais.
-- `src/components/KodeoApp.tsx`: interface compartilhada e estado da sessão.
-- `src/components/TrailExplorer.tsx`: biblioteca, tabuleiro, lista e detalhes de etapas.
-- `src/lib/trails.ts`: percursos e regras de acesso.
-- `src/components/theme.tsx`: tema Material UI nos dois modos.
-- `src/lib/learning.ts`: cursos, questões e configuração inicial de recompensas.
+```text
+src/
+├── app/                 # Rotas, layout e estilos globais
+│   └── trilhas/          # Tela do mapa de aprendizado
+├── components/          # Interface, tema e componentes das trilhas
+└── lib/                 # Dados simulados e regras de gamificação
 
-Base cromática: `hsl(210 60% 20%)`, com superfícies neutras e azuis mais claros para o tema escuro.
+tests/                   # Testes das regras de acesso e progressão
+```
 
-Stack: Next.js App Router, React, TypeScript, Material UI e Lucide.
+As regras de nível, requisitos e acesso às etapas ficam em `src/lib/trails.ts`. Cursos, questões e recompensas demonstrativas ficam em `src/lib/learning.ts`.
 
-## Próximas etapas
+## Roadmap
 
-Separar os componentes do dashboard conforme o fluxo crescer; expandir as lições e a jornada; integrar Supabase Auth, PostgreSQL e RLS. Após a integração, validar XP, respostas e progresso no servidor. Nenhuma credencial do Supabase é necessária nesta etapa.
+- [x] Dashboard com perfil demonstrativo.
+- [x] Temas claro e escuro.
+- [x] Mapa interativo e biblioteca de trilhas.
+- [x] Requisitos de acesso por nível, XP e pré-requisitos.
+- [x] Lição demonstrativa com feedback e atualização de progresso.
+- [ ] Expandir os conteúdos e as atividades das lições.
+- [ ] Integrar Supabase Auth, PostgreSQL e Row Level Security.
+- [ ] Persistir tentativas, progresso, conquistas e histórico de XP.
+- [ ] Validar respostas e recompensas no servidor.
+- [ ] Refinar a acessibilidade e realizar testes de usabilidade.
+
+## Cuidados com configuração
+
+Arquivos de ambiente, chaves privadas, credenciais locais e saídas de compilação ficam fora do versionamento. Exemplos de configuração devem conter somente valores fictícios. Na integração futura com Supabase, chaves administrativas serão usadas exclusivamente no servidor.
+
+---
+
+<div align="center">
+
+**Um passo de cada vez. Um pouco melhor a cada descoberta.**
+
+</div>
