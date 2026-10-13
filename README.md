@@ -80,6 +80,15 @@ pnpm build      # Gerar a versão de produção
 pnpm start      # Executar a versão compilada
 ```
 
+### Regressão de navegação no navegador
+
+```bash
+pnpm exec playwright install chromium  # Preparar o navegador uma vez
+pnpm test:e2e                          # Compilar, iniciar e testar a aplicação
+```
+
+O teste cobre o botão **Explorar** da tarefa de cibersegurança com a seleção inicial e após escolher outra trilha, incluindo voltar/avançar no histórico e repetir a navegação. O servidor de teste usa a porta 3100. Para usar um Chromium já instalado, defina `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` com o caminho do executável.
+
 ## Organização
 
 ```text
